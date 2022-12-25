@@ -4,6 +4,7 @@
 
 package com.grape.mybatisplus;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.grape.mybatisplus.entity.Book;
 import com.grape.mybatisplus.mapper.BookMapper;
@@ -63,12 +64,12 @@ public class MybatisPlusApplication {
     }
 
     List<BookVo> queryChild(int id, Integer status) {
-        QueryWrapper<Book> queryWrapper = new QueryWrapper<>();
+        LambdaQueryWrapper<Book> queryWrapper = new LambdaQueryWrapper<>();
         if (!ObjectUtils.isEmpty(status)) {
-            queryWrapper.eq("status", status);
+            queryWrapper.eq(Book::getStatus, status);
         }
 
-        queryWrapper.eq("parent_id", id);
+        queryWrapper.eq(Book::getParentId, id);
         return bookMapper.selectList(queryWrapper).stream().map(book -> {
             BookVo vo = entityToVo(book);
 
@@ -90,10 +91,9 @@ public class MybatisPlusApplication {
      */
     @Bean
     CommandLineRunner initWebClientRunner2() {
-        int status = -1;
         return runArgs -> {
-            QueryWrapper<Book> wrapper = new QueryWrapper<>();
-            wrapper.eq("status", -1);
+            LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(Book::getStatus, -1);
 
             // 先查所有无效数据
             List<BookVo> books = bookMapper.selectList(wrapper).stream().map(this::entityToVo).collect(Collectors.toList());
@@ -135,8 +135,8 @@ public class MybatisPlusApplication {
     }
 
     void queryByIdList(List<Integer> idList, List<BookVo> allList) {
-        QueryWrapper<Book> wrapper = new QueryWrapper<>();
-        wrapper.in("id", idList);
+        LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(Book::getId, idList);
         //
         List<BookVo> books = bookMapper.selectList(wrapper).stream().map(this::entityToVo).collect(Collectors.toList());
         allList.addAll(books);
